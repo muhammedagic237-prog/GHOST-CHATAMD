@@ -232,9 +232,11 @@ input::placeholder {
 }
 
 ::-webkit-scrollbar-thumb {
+    background: #0f0;
+}
 
-    /* Red Text for AMD */
-    .red-text {
-        /* Use transparent color for ghost effect text */
-        text-shadow: 0 0 10px rgba(255, 0, 0, 0.8), 0 0 20px rgba(255, 0, 0, 0.4);
-    }
+/* Red Text for AMD */
+.red-text {
+    /* Use transparent color for ghost effect text */
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.8), 0 0 20px rgba(255, 0, 0, 0.4);
+}
