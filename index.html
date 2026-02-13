@@ -14,6 +14,7 @@
 </head>
 
 <body>
+    <canvas id="matrix-canvas"></canvas>
 
     <!-- Intro Layer -->
     <div id="intro-layer">
@@ -42,6 +43,16 @@
         <div class="chat-input-area">
             <span class="prompt">></span>
             <input type="text" id="message-input" placeholder="Transmit..." autocomplete="off">
+
+            <!-- File Upload -->
+            <input type="file" id="image-input" accept="image/*" style="display:none">
+            <button id="upload-btn" class="cyber-btn" title="Send Image">[IMG]</button>
+
+            <!-- Panic Button -->
+            <button id="panic-btn" class="cyber-btn panic" title="DELETE ALL">[!!!]</button>
+
+            <!-- Send Button (Mobile) -->
+            <button id="send-btn" class="cyber-btn send" title="Transmit">SEND</button>
         </div>
     </div>
 

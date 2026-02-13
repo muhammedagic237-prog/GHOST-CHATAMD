@@ -5,11 +5,91 @@ document.addEventListener('DOMContentLoaded', () => {
     const usernameInput = document.getElementById('username-input');
     const keyInput = document.getElementById('key-input');
     const messageInput = document.getElementById('message-input');
+    const imageInput = document.getElementById('image-input');
+    const uploadBtn = document.getElementById('upload-btn');
+    const panicBtn = document.getElementById('panic-btn');
+    const sendBtn = document.getElementById('send-btn');
     const chatWindow = document.getElementById('chat-window');
 
     let username = '';
-    let roomKey = null; // CryptoKey
+    let roomKey = null;
     let roomPassword = '';
+
+    // --- PANIC BUTTON ---
+    // ...
+
+    // --- PANIC BUTTON ---
+    panicBtn.addEventListener('click', async () => {
+        if (confirm("⚠️ NUCLEAR OPTION ⚠️\n\nDelete ALL messages in the database immediately?")) {
+            const snapshot = await db.collection('messages').get();
+            const batch = db.batch();
+
+            snapshot.docs.forEach((doc) => {
+                batch.delete(doc.ref);
+            });
+
+            await batch.commit();
+            console.log("NUCLEAR WIPE COMPLETE.");
+            addSystemMessage("!!! PROTOCOL OMEGA EXECUTED. SYSTEM WIPED. !!!");
+        }
+    });
+
+    // --- IMAGE HANDLING ---
+    uploadBtn.addEventListener('click', () => imageInput.click());
+
+    imageInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        addSystemMessage("PROCESSING IMAGE...");
+
+        // 1. Compress & Base64
+        const base64 = await compressImage(file);
+
+        // 2. Encrypt (Prefix with IMG:)
+        const payload = await encryptMessage(`IMG:${base64}`);
+
+        // 3. Send
+        try {
+            await db.collection('messages').add({
+                user: username,
+                payload: payload,
+                timestamp: Date.now()
+            });
+            imageInput.value = ''; // Reset
+        } catch (err) {
+            console.error(err);
+            addSystemMessage("IMAGE TRANSMISSION FAILED.");
+        }
+    });
+
+    function compressImage(file) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 600;
+                    const scaleSize = MAX_WIDTH / img.width;
+                    const width = (img.width > MAX_WIDTH) ? MAX_WIDTH : img.width;
+                    const height = (img.width > MAX_WIDTH) ? (img.height * scaleSize) : img.height;
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Return compressed JPEG base64
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                };
+            };
+        });
+    }
+
+    // ... (Existing Code) ...
 
     // 1. Intro Sequence
     setTimeout(() => {
@@ -116,28 +196,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const TTL_MS = 24 * 60 * 60 * 1000; // 24 Hours
 
     // 4. Message Handler (Firestore Send)
-    messageInput.addEventListener('keypress', async (e) => {
-        if (e.key === 'Enter') {
-            const msg = messageInput.value.trim();
-            if (msg.length > 0) {
-                // Encrypt
-                const encryptedPayload = await encryptMessage(msg);
+    const sendMessage = async () => {
+        const msg = messageInput.value.trim();
+        if (msg.length > 0) {
+            // Encrypt
+            const encryptedPayload = await encryptMessage(msg);
 
-                // Send to Firebase
-                try {
-                    await db.collection('messages').add({
-                        user: username,
-                        payload: encryptedPayload,
-                        timestamp: Date.now()
-                    });
-                    messageInput.value = '';
-                } catch (err) {
-                    console.error("Transmission Error:", err);
-                    addSystemMessage("TRANSMISSION FAILED.");
-                }
+            // Send to Firebase
+            try {
+                await db.collection('messages').add({
+                    user: username,
+                    payload: encryptedPayload,
+                    timestamp: Date.now()
+                });
+                messageInput.value = '';
+                messageInput.focus();
+            } catch (err) {
+                console.error("Transmission Error:", err);
+                addSystemMessage("TRANSMISSION FAILED.");
             }
         }
+    };
+
+    messageInput.addEventListener('keypress', async (e) => {
+        if (e.key === 'Enter') sendMessage();
     });
+
+    sendBtn.addEventListener('click', sendMessage);
 
     // 5. Real-time Listener & Auto-Delete
     function startChatListener() {
@@ -188,7 +273,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function addMessage(user, text) {
         const div = document.createElement('div');
         div.className = 'chat-msg';
-        div.innerHTML = `<span class="user">[${user}]</span> ${text}`;
+
+        if (text.startsWith("IMG:")) {
+            const imgSrc = text.substring(4); // Remove prefix
+            div.innerHTML = `<span class="user">[${user}]</span> <br><img src="${imgSrc}" class="chat-img" onclick="window.open(this.src)">`;
+        } else {
+            // Securely escape text to prevent HTML injection (XSS)
+            // (Wait, innerHTML was used before. For safety, let's use textContent for payload unless it's an image)
+            // But to keep simple with bold user:
+            const textContent = document.createTextNode(text);
+            div.innerHTML = `<span class="user">[${user}]</span> `;
+            div.appendChild(textContent);
+        }
+
         chatWindow.appendChild(div);
         scrollToBottom();
     }
@@ -196,4 +293,44 @@ document.addEventListener('DOMContentLoaded', () => {
     function scrollToBottom() {
         chatWindow.scrollTop = chatWindow.scrollHeight;
     }
+
+    // --- MATRIX RAIN EFFECT ---
+    const canvas = document.getElementById('matrix-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    // Resize handler
+    window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    });
+
+    const cols = Math.floor(width / 20);
+    const ypos = Array(cols).fill(0);
+
+    function matrix() {
+        // Fade effect
+        ctx.fillStyle = '#0001'; // Very translucent black to leave trails
+        ctx.fillRect(0, 0, width, height);
+
+        ctx.fillStyle = '#0f0';
+        ctx.font = '15pt monospace';
+
+        ypos.forEach((y, ind) => {
+            const text = String.fromCharCode(Math.random() * 128);
+            const x = ind * 20;
+            ctx.fillText(text, x, y);
+
+            // Random reset
+            if (y > height && Math.random() > 0.975) {
+                ypos[ind] = 0;
+            } else {
+                ypos[ind] = y + 20;
+            }
+        });
+    }
+
+    setInterval(matrix, 50);
 });
