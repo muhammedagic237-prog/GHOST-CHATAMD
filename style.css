@@ -25,6 +25,7 @@ body {
     pointer-events: none;
 }
 
+
 /* Intro Animation */
 #intro-layer {
     position: absolute;
@@ -38,6 +39,12 @@ body {
     animation: fadeOut 0.5s ease-in forwards;
     animation-delay: 3s;
     /* Wait 3 seconds before disappearing */
+}
+
+.intro-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .ghost-text {
@@ -239,4 +246,10 @@ input::placeholder {
 .red-text {
     /* Use transparent color for ghost effect text */
     text-shadow: 0 0 10px rgba(255, 0, 0, 0.8), 0 0 20px rgba(255, 0, 0, 0.4);
+}
+
+.ghost-text.small {
+    font-size: 3rem;
+    margin-top: -20px;
+    /* Pull it up slightly */
 }
