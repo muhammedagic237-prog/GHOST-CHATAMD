@@ -48,12 +48,28 @@ body {
 }
 
 .ghost-text {
-    font-size: 6rem;
+    font-size: 8rem;
+    /* Scaled UP significantly */
     color: transparent;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4);
     animation: fogBreath 3s ease-in-out infinite alternate;
-    letter-spacing: 10px;
+    letter-spacing: 15px;
     filter: blur(2px);
+}
+
+/* ... */
+
+/* Red Text for AMD */
+.red-text {
+    /* Use transparent color for ghost effect text */
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.8), 0 0 20px rgba(255, 0, 0, 0.4);
+}
+
+.ghost-text.small {
+    font-size: 4rem;
+    /* Scaled UP significantly */
+    margin-top: -15px;
+    /* Pull it up slightly */
 }
 
 @keyframes fogBreath {
@@ -177,14 +193,14 @@ input::placeholder {
 
     /* Mobile Text Sizing */
     .ghost-text {
-        font-size: 3.5rem;
-        /* reduce from 6rem */
+        font-size: 4rem;
+        /* Scaled UP for mobile */
         letter-spacing: 5px;
     }
 
     .ghost-text.small {
-        font-size: 1.8rem;
-        /* reduce from 3rem */
+        font-size: 2rem;
+        /* Scaled UP for mobile */
         margin-top: -10px;
     }
 
@@ -253,16 +269,4 @@ input::placeholder {
 
 ::-webkit-scrollbar-thumb {
     background: #0f0;
-}
-
-/* Red Text for AMD */
-.red-text {
-    /* Use transparent color for ghost effect text */
-    text-shadow: 0 0 10px rgba(255, 0, 0, 0.8), 0 0 20px rgba(255, 0, 0, 0.4);
-}
-
-.ghost-text.small {
-    font-size: 3rem;
-    margin-top: -20px;
-    /* Pull it up slightly */
 }
