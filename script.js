@@ -128,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Derive CryptoKey from Password
             try {
+                addSystemMessage("DECRYPTING SECURE KEY...");
                 roomKey = await deriveKey(pass);
 
                 loginLayer.classList.add('hidden');
@@ -135,7 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 messageInput.focus();
 
                 addSystemMessage(`IDENTITY VERIFIED: ${username}`);
-                addSystemMessage(`ENCRYPTION KEY GENERATED.`);
                 addSystemMessage(`SECURE CHANNEL ESTABLISHED.`);
 
                 // Start Firebase Listener
@@ -264,6 +264,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const msgText = messageInput.value.trim();
         if (msgText.length > 0) {
 
+            // UX: Disable Input
+            messageInput.disabled = true;
+            sendBtn.disabled = true;
+
             // Construct Payload with Metadata inside
             const payloadObj = {
                 user: username,
@@ -273,7 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             // Encrypt the JSON Payload
-            const encryptedPayload = await encryptMessage(payloadObj);
+            const encryptedPayload = await encryptMessage(JSON.stringify(payloadObj));
 
             // Send to Firebase (Anonymous User Field)
             try {
@@ -283,10 +287,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     timestamp: Date.now()
                 });
                 messageInput.value = '';
-                messageInput.focus();
             } catch (err) {
-                console.error("Transmission Error:", err);
+                // console.error("Transmission Error:", err); // Cleaned up
                 addSystemMessage("TRANSMISSION FAILED.");
+            } finally {
+                // UX: Re-enable
+                messageInput.disabled = false;
+                sendBtn.disabled = false;
+                messageInput.focus();
             }
         }
     };
@@ -405,7 +413,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const cols = Math.floor(width / 20);
     const ypos = Array(cols).fill(0);
 
-    function matrix() {
+    // FPS Loop
+    let lastTime = 0;
+    const fps = 24; // Cinematic 24fps is enough for matrix, saves battery
+    const interval = 1000 / fps;
+
+    function matrix(currentTime) {
+        requestAnimationFrame(matrix);
+
+        const delta = currentTime - lastTime;
+        if (delta < interval) return;
+
+        lastTime = currentTime - (delta % interval);
+
         // Fade effect
         ctx.fillStyle = '#0001'; // Very translucent black to leave trails
         ctx.fillRect(0, 0, width, height);
@@ -427,5 +447,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    setInterval(matrix, 50);
+    requestAnimationFrame(matrix);
 });
