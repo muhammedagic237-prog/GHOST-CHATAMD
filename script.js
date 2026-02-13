@@ -160,6 +160,26 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
+    function arrayBufferToBase64(buffer) {
+        let binary = '';
+        const bytes = new Uint8Array(buffer);
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return window.btoa(binary);
+    }
+
+    function base64ToArrayBuffer(base64) {
+        const binary_string = window.atob(base64);
+        const len = binary_string.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binary_string.charCodeAt(i);
+        }
+        return bytes.buffer;
+    }
+
     async function encryptMessage(text) {
         const enc = new TextEncoder();
         const iv = window.crypto.getRandomValues(new Uint8Array(12)); // Random IV
@@ -169,17 +189,26 @@ document.addEventListener('DOMContentLoaded', () => {
             enc.encode(text)
         );
 
-        // Pack IV + Ciphertext for storage
-        const ivArr = Array.from(iv);
-        const ctArr = Array.from(new Uint8Array(ciphertext));
-        return JSON.stringify({ iv: ivArr, data: ctArr });
+        // Pack IV + Ciphertext for storage (Base64 optimized)
+        return JSON.stringify({
+            iv: arrayBufferToBase64(iv),
+            data: arrayBufferToBase64(ciphertext)
+        });
     }
 
     async function decryptMessage(packedJson) {
         try {
             const packed = JSON.parse(packedJson);
-            const iv = new Uint8Array(packed.iv);
-            const data = new Uint8Array(packed.data);
+            let iv, data;
+
+            // Handle Legacy (Array) vs New (Base64)
+            if (Array.isArray(packed.iv)) {
+                iv = new Uint8Array(packed.iv);
+                data = new Uint8Array(packed.data);
+            } else {
+                iv = new Uint8Array(base64ToArrayBuffer(packed.iv));
+                data = new Uint8Array(base64ToArrayBuffer(packed.data));
+            }
 
             const decrypted = await window.crypto.subtle.decrypt(
                 { name: "AES-GCM", iv: iv },
@@ -189,7 +218,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             return new TextDecoder().decode(decrypted);
         } catch (e) {
-            return "[ENCRYPTED DATA]"; // Wrong key result
+            console.error("Decryption failed:", e);
+            return "[ENCRYPTED DATA - KEY MISMATCH]";
         }
     }
 
@@ -270,19 +300,31 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollToBottom();
     }
 
+    function getUserColor(username) {
+        let hash = 0;
+        for (let i = 0; i < username.length; i++) {
+            hash = username.charCodeAt(i) + ((hash << 5) - hash);
+        }
+
+        // Colors: Neon Blue, Neon Red, Neon Orange, Neon Green (Default)
+        const colors = ['#0088ff', '#ff3333', '#ffa500', '#0f0'];
+        const index = Math.abs(hash % colors.length);
+        return colors[index];
+    }
+
     function addMessage(user, text) {
         const div = document.createElement('div');
         div.className = 'chat-msg';
 
+        const userColor = getUserColor(user);
+        const userSpan = `<span class="user" style="color: ${userColor}">[${user}]</span>`;
+
         if (text.startsWith("IMG:")) {
             const imgSrc = text.substring(4); // Remove prefix
-            div.innerHTML = `<span class="user">[${user}]</span> <br><img src="${imgSrc}" class="chat-img" onclick="window.open(this.src)">`;
+            div.innerHTML = `${userSpan} <br><img src="${imgSrc}" class="chat-img" onclick="window.open(this.src)">`;
         } else {
-            // Securely escape text to prevent HTML injection (XSS)
-            // (Wait, innerHTML was used before. For safety, let's use textContent for payload unless it's an image)
-            // But to keep simple with bold user:
-            const textContent = document.createTextNode(text);
-            div.innerHTML = `<span class="user">[${user}]</span> `;
+            const textContent = document.createTextNode(" " + text);
+            div.innerHTML = `${userSpan}`;
             div.appendChild(textContent);
         }
 
