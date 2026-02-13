@@ -175,6 +175,19 @@ input::placeholder {
         flex-wrap: wrap;
     }
 
+    /* Mobile Text Sizing */
+    .ghost-text {
+        font-size: 3.5rem;
+        /* reduce from 6rem */
+        letter-spacing: 5px;
+    }
+
+    .ghost-text.small {
+        font-size: 1.8rem;
+        /* reduce from 3rem */
+        margin-top: -10px;
+    }
+
     #message-input {
         min-width: 150px;
     }

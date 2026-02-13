@@ -465,63 +465,94 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Decoy Mode (Spreadsheet)
     let decoyMode = false;
     const decoyHTML = `
-        <div id="decoy-overlay" style="position:fixed; inset:0; background:#fff; z-index:9999; font-family:Arial, sans-serif; color:#000; overflow:hidden;">
-            <div style="background:#217346; color:white; padding:5px 10px; font-weight:bold;">Excel - Annual_Report.xlsx</div>
-            <div style="background:#f3f3f3; border-bottom:1px solid #ccc; padding:5px;">
-                <span style="display:inline-block; width:20px; text-align:center; color:#999;">fx</span>
-                <input type="text" value="=SUM(C2:C15)" style="width:90%; border:none; background:transparent;">
+        <div id="decoy-overlay" style="position:fixed; inset:0; background:#fff; z-index:9999; font-family:Arial, sans-serif; color:#000; overflow-y:auto;">
+            <div style="background:#217346; color:white; padding:10px; font-weight:bold; font-size:14px;">Excel - Annual_Report.xlsx</div>
+            <div style="background:#f3f3f3; border-bottom:1px solid #ccc; padding:8px; display:flex; align-items:center;">
+                <span style="display:inline-block; width:20px; text-align:center; color:#999; font-size:12px;">fx</span>
+                <input type="text" value="=SUM(C2:C15)" style="width:100%; border:none; background:transparent; font-size:14px;">
             </div>
-            <table style="width:100%; border-collapse:collapse; font-size:12px;">
-                <tr style="background:#f3f3f3; text-align:center; color:#666;">
-                    <td style="border:1px solid #ccc; width:30px;"></td>
-                    <td style="border:1px solid #ccc;">A</td>
-                    <td style="border:1px solid #ccc;">B</td>
-                    <td style="border:1px solid #ccc;">C</td>
-                    <td style="border:1px solid #ccc;">D</td>
-                </tr>
-                <tr>
-                    <td style="background:#f3f3f3; border:1px solid #ccc; text-align:center;">1</td>
-                    <td style="border:1px solid #eee; padding:2px;">Category</td>
-                    <td style="border:1px solid #eee; padding:2px;">Q1 2025</td>
-                    <td style="border:1px solid #eee; padding:2px;">Q2 2025</td>
-                    <td style="border:1px solid #eee; padding:2px;">Growth</td>
-                </tr>
-                <tr>
-                    <td style="background:#f3f3f3; border:1px solid #ccc; text-align:center;">2</td>
-                    <td style="border:1px solid #eee; padding:2px;">Revenue</td>
-                    <td style="border:1px solid #eee; padding:2px;">$12,450</td>
-                    <td style="border:1px solid #eee; padding:2px;">$14,200</td>
-                    <td style="border:1px solid #eee; padding:2px; color:green;">+14%</td>
-                </tr>
-                <tr>
-                    <td style="background:#f3f3f3; border:1px solid #ccc; text-align:center;">3</td>
-                    <td style="border:1px solid #eee; padding:2px;">Expenses</td>
-                    <td style="border:1px solid #eee; padding:2px;">$8,100</td>
-                    <td style="border:1px solid #eee; padding:2px;">$8,500</td>
-                    <td style="border:1px solid #eee; padding:2px; color:red;">+5%</td>
-                </tr>
-                 <tr>
-                    <td style="background:#f3f3f3; border:1px solid #ccc; text-align:center;">4</td>
-                     <td style="border:1px solid #eee; padding:2px;">Net Profit</td>
-                    <td style="border:1px solid #eee; padding:2px;">$4,350</td>
-                    <td style="border:1px solid #eee; padding:2px;">$5,700</td>
-                    <td style="border:1px solid #eee; padding:2px; color:green;">+31%</td>
-                </tr>
-            </table>
+            <div style="overflow-x:auto;">
+                <table style="width:100%; min-width:350px; border-collapse:collapse; font-size:12px;">
+                    <tr style="background:#f3f3f3; text-align:center; color:#666;">
+                        <td style="border:1px solid #ccc; width:30px;"></td>
+                        <td style="border:1px solid #ccc; width:50px;">A</td>
+                        <td style="border:1px solid #ccc; width:80px;">B</td>
+                        <td style="border:1px solid #ccc; width:80px;">C</td>
+                        <td style="border:1px solid #ccc; width:60px;">D</td>
+                    </tr>
+                    <!-- Responsive Rows -->
+                    <tr>
+                        <td style="background:#f3f3f3; border:1px solid #ccc; text-align:center;">1</td>
+                        <td style="border:1px solid #eee; padding:4px;">Global</td>
+                        <td style="border:1px solid #eee; padding:4px;">Q1 2025</td>
+                        <td style="border:1px solid #eee; padding:4px;">Q2 2025</td>
+                        <td style="border:1px solid #eee; padding:4px;">%</td>
+                    </tr>
+                    <tr>
+                        <td style="background:#f3f3f3; border:1px solid #ccc; text-align:center;">2</td>
+                        <td style="border:1px solid #eee; padding:4px;">Rev</td>
+                        <td style="border:1px solid #eee; padding:4px;">$12k</td>
+                        <td style="border:1px solid #eee; padding:4px;">$14k</td>
+                        <td style="border:1px solid #eee; padding:4px; color:green;">+14%</td>
+                    </tr>
+                    <tr>
+                        <td style="background:#f3f3f3; border:1px solid #ccc; text-align:center;">3</td>
+                        <td style="border:1px solid #eee; padding:4px;">Exp</td>
+                        <td style="border:1px solid #eee; padding:4px;">$8k</td>
+                        <td style="border:1px solid #eee; padding:4px;">$8.5k</td>
+                        <td style="border:1px solid #eee; padding:4px; color:red;">+5%</td>
+                    </tr>
+                     <tr>
+                        <td style="background:#f3f3f3; border:1px solid #ccc; text-align:center;">4</td>
+                         <td style="border:1px solid #eee; padding:4px;">Net</td>
+                        <td style="border:1px solid #eee; padding:4px;">$4k</td>
+                        <td style="border:1px solid #eee; padding:4px;">$5.7k</td>
+                        <td style="border:1px solid #eee; padding:4px; color:green;">+31%</td>
+                    </tr>
+                </table>
+            </div>
+            <div style="padding:20px; text-align:center; color:#999; font-size:10px;">
+                Sheet 1 | Sheet 2 | Sheet 3
+            </div>
         </div>
     `;
 
+    function toggleDecoy() {
+        decoyMode = !decoyMode;
+        if (decoyMode) {
+            document.body.insertAdjacentHTML('beforeend', decoyHTML);
+            document.title = 'Annual_Report.xlsx - Excel';
+        } else {
+            const decoy = document.getElementById('decoy-overlay');
+            if (decoy) decoy.remove();
+            document.title = 'GHOST';
+        }
+    }
+
+    // Desktop: ESC Key
     window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            decoyMode = !decoyMode;
-            if (decoyMode) {
-                document.body.insertAdjacentHTML('beforeend', decoyHTML);
-                document.title = 'Annual_Report.xlsx - Excel';
-            } else {
-                const decoy = document.getElementById('decoy-overlay');
-                if (decoy) decoy.remove();
-                document.title = 'GHOST';
-            }
+        if (e.key === 'Escape') toggleDecoy();
+    });
+
+    // Mobile: Triple Tap Gesture
+    let tapCount = 0;
+    let lastTapTime = 0;
+
+    document.addEventListener('touchstart', (e) => {
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTapTime;
+
+        if (tapLength < 500 && tapLength > 0) {
+            tapCount++;
+        } else {
+            tapCount = 1;
+        }
+
+        lastTapTime = currentTime;
+
+        if (tapCount === 3) {
+            toggleDecoy();
+            tapCount = 0; // Reset
         }
     });
 });
