@@ -1,0 +1,146 @@
+body {
+    background-color: #000;
+    color: #0f0;
+    font-family: 'Courier New', Courier, monospace;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Intro Animation */
+#intro-layer {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    background: #000;
+    animation: fadeOut 0.5s ease-in forwards;
+    animation-delay: 3s;
+    /* Wait 3 seconds before disappearing */
+}
+
+.ghost-text {
+    font-size: 6rem;
+    color: transparent;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4);
+    animation: fogBreath 3s ease-in-out infinite alternate;
+    letter-spacing: 10px;
+    filter: blur(2px);
+}
+
+@keyframes fogBreath {
+    0% {
+        opacity: 0;
+        filter: blur(10px);
+        transform: scale(0.9);
+    }
+
+    50% {
+        opacity: 1;
+        filter: blur(2px);
+        transform: scale(1.0);
+    }
+
+    100% {
+        opacity: 0;
+        filter: blur(10px);
+        transform: scale(1.1);
+    }
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+/* Login & Chat Layers */
+.hidden {
+    display: none !important;
+}
+
+#login-layer,
+#chat-layer {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+}
+
+.input-container,
+.chat-input-area {
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid #0f0;
+    padding-bottom: 5px;
+}
+
+.prompt {
+    margin-right: 10px;
+    font-weight: bold;
+    text-shadow: 0 0 5px #0f0;
+}
+
+input {
+    background: transparent;
+    border: none;
+    color: #0f0;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.2rem;
+    width: 100%;
+    outline: none;
+    text-transform: uppercase;
+}
+
+input::placeholder {
+    color: #004400;
+}
+
+/* Chat Window */
+#chat-window {
+    height: 70vh;
+    overflow-y: auto;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    /* Start from bottom */
+    border: 1px solid #004400;
+    padding: 10px;
+}
+
+.system-msg {
+    color: #008800;
+    font-style: italic;
+    margin-bottom: 5px;
+}
+
+.chat-msg {
+    margin-bottom: 5px;
+    word-wrap: break-word;
+}
+
+.chat-msg .user {
+    color: #fff;
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #001100;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #0f0;
+}

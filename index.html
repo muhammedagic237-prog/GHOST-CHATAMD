@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GHOST</title>
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <!-- Add Firebase products that you want to use -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Intro Layer -->
+    <div id="intro-layer">
+        <h1 class="ghost-text">GHOST</h1>
+    </div>
+
+    <!-- Login Layer (Hidden initially) -->
+    <div id="login-layer" class="hidden">
+        <div class="input-container">
+            <span class="prompt">> IDENTITY:</span>
+            <input type="text" id="username-input" placeholder="_" autocomplete="off" maxlength="15">
+        </div>
+        <div class="input-container" style="margin-top: 10px;">
+            <span class="prompt">> KEY CODE:</span>
+            <input type="password" id="key-input" placeholder="******" autocomplete="off">
+        </div>
+    </div>
+
+    <!-- Chat Layer (Hidden initially) -->
+    <div id="chat-layer" class="hidden">
+        <div id="chat-window">
+            <!-- Messages go here -->
+            <div class="system-msg">> CONNECTION ESTABLISHED.</div>
+            <div class="system-msg">> MESSAGES AUTO-PURGE IN 24H.</div>
+        </div>
+        <div class="chat-input-area">
+            <span class="prompt">></span>
+            <input type="text" id="message-input" placeholder="Transmit..." autocomplete="off">
+        </div>
+    </div>
+
+    <script src="firebase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
