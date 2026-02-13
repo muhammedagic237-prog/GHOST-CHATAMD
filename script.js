@@ -20,17 +20,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- PANIC BUTTON ---
     panicBtn.addEventListener('click', async () => {
-        if (confirm("⚠️ NUCLEAR OPTION ⚠️\n\nDelete ALL messages in the database immediately?")) {
-            const snapshot = await db.collection('messages').get();
-            const batch = db.batch();
+        if (confirm("⚠️ NUCLEAR OPTION ⚠️\n\n1. Wipe Local Keys (Memory)\n2. Delete All Messages\n3. Reload App")) {
 
-            snapshot.docs.forEach((doc) => {
-                batch.delete(doc.ref);
-            });
+            // 1. Wipe Memory
+            roomKey = null;
+            username = null;
+            roomPassword = null;
 
-            await batch.commit();
-            console.log("NUCLEAR WIPE COMPLETE.");
-            addSystemMessage("!!! PROTOCOL OMEGA EXECUTED. SYSTEM WIPED. !!!");
+            try {
+                const snapshot = await db.collection('messages').get();
+                const batch = db.batch();
+
+                snapshot.docs.forEach((doc) => {
+                    batch.delete(doc.ref);
+                });
+
+                await batch.commit();
+                console.log("NUCLEAR WIPE COMPLETE.");
+
+                // 3. Reload to clear any fragments
+                window.location.reload();
+            } catch (e) {
+                window.location.reload(); // Reload anyway
+            }
         }
     });
 
@@ -44,15 +56,23 @@ document.addEventListener('DOMContentLoaded', () => {
         addSystemMessage("PROCESSING IMAGE...");
 
         // 1. Compress & Base64
-        const base64 = await compressImage(file);
+        const base64Img = await compressImage(file);
 
-        // 2. Encrypt (Prefix with IMG:)
-        const payload = await encryptMessage(`IMG:${base64}`);
+        // 2. Construct Payload
+        const payloadObj = {
+            user: username,
+            content: base64Img,
+            type: 'image',
+            timestamp: Date.now()
+        };
 
-        // 3. Send
+        // 3. Encrypt
+        const payload = await encryptMessage(JSON.stringify(payloadObj));
+
+        // 4. Send
         try {
             await db.collection('messages').add({
-                user: username,
+                user: "ANONYMOUS",
                 payload: payload,
                 timestamp: Date.now()
             });
@@ -216,26 +236,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 data
             );
 
-            return new TextDecoder().decode(decrypted);
+            const decodedString = new TextDecoder().decode(decrypted);
+
+            // Try to parse as JSON (New Protocol), fallback to string (Legacy)
+            try {
+                return JSON.parse(decodedString);
+            } catch (e) {
+                // Legacy: Payload was just string "Message" or "IMG:..."
+                // Wrap in new object format for consistent handling
+                return {
+                    user: "UNKNOWN", // Encryption didn't hide user before
+                    content: decodedString,
+                    type: decodedString.startsWith("IMG:") ? "image" : "text"
+                };
+            }
+
         } catch (e) {
             console.error("Decryption failed:", e);
-            return "[ENCRYPTED DATA - KEY MISMATCH]";
+            return null; // Return null on failure logic
         }
     }
 
-    const TTL_MS = 24 * 60 * 60 * 1000; // 24 Hours
+    const TTL_MS = 17 * 60 * 1000 + 40 * 1000; // 17m 40s (1060000 ms)
 
     // 4. Message Handler (Firestore Send)
     const sendMessage = async () => {
-        const msg = messageInput.value.trim();
-        if (msg.length > 0) {
-            // Encrypt
-            const encryptedPayload = await encryptMessage(msg);
+        const msgText = messageInput.value.trim();
+        if (msgText.length > 0) {
 
-            // Send to Firebase
+            // Construct Payload with Metadata inside
+            const payloadObj = {
+                user: username,
+                content: msgText,
+                type: 'text',
+                timestamp: Date.now() // Internal timestamp for verification
+            };
+
+            // Encrypt the JSON Payload
+            const encryptedPayload = await encryptMessage(payloadObj);
+
+            // Send to Firebase (Anonymous User Field)
             try {
                 await db.collection('messages').add({
-                    user: username,
+                    user: "ANONYMOUS", // Hide metadata
                     payload: encryptedPayload,
                     timestamp: Date.now()
                 });
@@ -277,8 +320,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // Display
                         if (data.payload) {
-                            const decryptedText = await decryptMessage(data.payload);
-                            addMessage(data.user, decryptedText);
+                            const decryptedObj = await decryptMessage(data.payload);
+
+                            if (decryptedObj) {
+                                // Extract user, content, type from the decrypted object
+                                const user = decryptedObj.user || "UNKNOWN";
+                                const content = decryptedObj.content;
+                                const type = decryptedObj.type || 'text';
+
+                                addMessage(user, content, type);
+                            }
                         }
                     }
                 });
@@ -312,18 +363,20 @@ document.addEventListener('DOMContentLoaded', () => {
         return colors[index];
     }
 
-    function addMessage(user, text) {
+    function addMessage(user, content, type) {
         const div = document.createElement('div');
         div.className = 'chat-msg';
 
-        const userColor = getUserColor(user);
-        const userSpan = `<span class="user" style="color: ${userColor}">[${user}]</span>`;
+        // Sanitize Username
+        const safeUser = user.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const userColor = getUserColor(safeUser);
+        const userSpan = `<span class="user" style="color: ${userColor}">[${safeUser}]</span>`;
 
-        if (text.startsWith("IMG:")) {
-            const imgSrc = text.substring(4); // Remove prefix
-            div.innerHTML = `${userSpan} <br><img src="${imgSrc}" class="chat-img" onclick="window.open(this.src)">`;
+        if (type === 'image') {
+            div.innerHTML = `${userSpan} <br><img src="${content}" class="chat-img" onclick="window.open(this.src)">`;
         } else {
-            const textContent = document.createTextNode(" " + text);
+            // Sanitize Content or use textNode
+            const textContent = document.createTextNode(" " + content);
             div.innerHTML = `${userSpan}`;
             div.appendChild(textContent);
         }
