@@ -1,28 +1,46 @@
 /* Service Worker for Offline Caching & Notifications */
-const CACHE_NAME = 'ghost-chat-v1';
+const CACHE_NAME = 'ghost-chat-v2';
 const ASSETS = [
     './',
     './index.html',
-    './style.css',
-    './script.js',
+    './style.css?v=2.0',
+    './script.js?v=2.0',
     './firebase-config.js',
     './manifest.json'
 ];
 
+// Install: Cache Files
 self.addEventListener('install', (event) => {
+    self.skipWaiting(); // Force update immediately
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => cache.addAll(ASSETS))
     );
 });
 
-self.addEventListener('fetch', (event) => {
-    event.respondWith(
-        caches.match(event.request)
-            .then((response) => response || fetch(event.request))
+// Activate: Clear Old Caches
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames.map((cache) => {
+                    if (cache !== CACHE_NAME) {
+                        return caches.delete(cache);
+                    }
+                })
+            );
+        })
     );
+    self.clients.claim(); // Take control of uncontrolled clients
 });
 
+// Fetch: Network First, then Cache (Better for active dev)
+self.addEventListener('fetch', (event) => {
+    event.respondWith(
+        fetch(event.request)
+            .catch(() => caches.match(event.request))
+    );
+});
 // Push Notification Handler (Placeholder)
 self.addEventListener('push', (event) => {
     const data = event.data ? event.data.text() : 'Encrypted Message';

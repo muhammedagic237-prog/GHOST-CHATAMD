@@ -750,8 +750,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- PWA & NOTIFICATIONS SETUP ---
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('service-worker.js')
-            .then(reg => console.log('SW Registered', reg))
+            .then(reg => {
+                console.log('SW Registered', reg);
+                // Check if update found
+                reg.onupdatefound = () => {
+                    const installingWorker = reg.installing;
+                    installingWorker.onstatechange = () => {
+                        if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // New content available, but waiting.
+                            // We skipWaiting() in SW, so this might not be needed, but good for safety.
+                            console.log("New update available");
+                        }
+                    };
+                };
+            })
             .catch(err => console.log('SW Fail', err));
+
+        // Reload when new SW takes control (Auto-Update)
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            console.log("New SW active, reloading...");
+            window.location.reload();
+        });
     }
 
     function requestNotificationPermission() {
