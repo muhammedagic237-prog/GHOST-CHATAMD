@@ -57,6 +57,32 @@ body {
     filter: blur(2px);
 }
 
+.warning-banner {
+    color: #f00;
+    background: #220000;
+    border: 1px solid #f00;
+    padding: 10px;
+    margin-top: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-shadow: 0 0 5px #f00;
+    animation: flashWarning 2s infinite;
+}
+
+@keyframes flashWarning {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
 /* ... */
 
 /* Red Text for AMD */

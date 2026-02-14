@@ -12,8 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatWindow = document.getElementById('chat-window');
 
     let username = '';
-    let roomKey = null;
-    let roomPassword = '';
+    let roomKey = null; // Shared Secret (AES-GCM)
+    let myKeyPair = null; // Ephemeral ECDH Key Pair
+    let remotePublicKey = null; // Peer's Public Key
 
     // --- PANIC BUTTON ---
     // ...
@@ -117,32 +118,78 @@ document.addEventListener('DOMContentLoaded', () => {
         usernameInput.focus();
     }, 3500);
 
-    // 2. Login Handler (User & Key)
+    // 2. Login Handler (Room Handshake)
     const handleLogin = async () => {
         const user = usernameInput.value.trim();
-        const pass = keyInput.value.trim();
+        const roomName = keyInput.value.trim(); // "Key Code" input is now Room Name
 
-        if (user.length > 0 && pass.length > 0) {
+        if (user.length > 0 && roomName.length > 0) {
             username = user;
-            roomPassword = pass;
 
-            // Derive CryptoKey from Password
             try {
-                addSystemMessage("DECRYPTING SECURE KEY...");
-                roomKey = await deriveKey(pass);
+                addSystemMessage("GENERATING EPHEMERAL KEYS...");
+                myKeyPair = await generateKeyPair();
+
+                // 1. Export my Public Key to JWK
+                const exportedKey = await exportKey(myKeyPair.publicKey);
+
+                // 2. Upload to Firestore: rooms/{roomName}/keys/{username}
+                const roomRef = db.collection('rooms').doc(roomName).collection('keys');
+
+                await roomRef.doc(username).set({
+                    key: JSON.stringify(exportedKey),
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
 
                 loginLayer.classList.add('hidden');
                 chatLayer.classList.remove('hidden');
                 messageInput.focus();
 
                 addSystemMessage(`IDENTITY VERIFIED: ${username}`);
-                addSystemMessage(`SECURE CHANNEL ESTABLISHED.`);
+                addSystemMessage(`WAITING FOR PEER HANDSHAKE...`);
 
-                // Start Firebase Listener
-                startChatListener();
+                // 3. Listen for PEER keys
+                roomRef.onSnapshot(async (snapshot) => {
+                    snapshot.docChanges().forEach(async (change) => {
+                        if (change.type === "added") {
+                            const data = change.doc.data();
+                            const peerName = change.doc.id;
+
+                            // If it's NOT ME, it's a peer
+                            if (peerName !== username) {
+                                addSystemMessage(`PEER DETECTED: ${peerName}`);
+                                addSystemMessage(`PERFORMING DIFFIE-HELLMAN KEY EXCHANGE...`);
+
+                                try {
+                                    const peerKeyJWK = JSON.parse(data.key);
+                                    const peerKey = await importKey(peerKeyJWK);
+
+                                    // DERIVE SHARED SECRET
+                                    roomKey = await deriveSharedSecret(myKeyPair.privateKey, peerKey);
+
+                                    addSystemMessage(`SECURE CHANNEL ESTABLISHED 🔒`);
+
+                                    // Start Chat Listener (Now that we have a key)
+                                    // Note: In a real app, we'd bind messages to this specific Room ID.
+                                    // For this prototype, we are still using global messages but keyed encryption.
+                                    // To make it ROBUST, we should filter messages by Room.
+                                    // Let's keep it simple: ALL messages go to 'messages' collection, 
+                                    // but only those with THIS key can be decrypted. 
+                                    // Anyone else sees garbage.
+                                    startChatListener();
+
+                                } catch (err) {
+                                    console.error("Handshake failed:", err);
+                                    addSystemMessage("HANDSHAKE FAILED.");
+                                }
+                            }
+                        }
+                    });
+                });
+
             } catch (err) {
                 console.error(err);
-                alert("ENCRYPTION FAILURE");
+                alert("CRITICAL ERROR: KEY GENERATION FAILED");
             }
         }
     };
@@ -156,25 +203,51 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // 3. Crypto Functions (Web Crypto API)
-    async function deriveKey(password) {
-        const enc = new TextEncoder();
-        const keyMaterial = await window.crypto.subtle.importKey(
-            "raw",
-            enc.encode(password),
-            { name: "PBKDF2" },
-            false,
-            ["deriveKey"]
-        );
+    // 3. Crypto Functions (Web Crypto API - ECDH)
 
+    // Generate Ephemeral P-256 Key Pair
+    async function generateKeyPair() {
+        return window.crypto.subtle.generateKey(
+            {
+                name: "ECDH",
+                namedCurve: "P-256"
+            },
+            true,
+            ["deriveKey", "deriveBits"]
+        );
+    }
+
+    // Export Key to JWK (JSON Web Key) for transport
+    async function exportKey(key) {
+        return window.crypto.subtle.exportKey("jwk", key);
+    }
+
+    // Import Key from JWK
+    async function importKey(jwk) {
+        return window.crypto.subtle.importKey(
+            "jwk",
+            jwk,
+            {
+                name: "ECDH",
+                namedCurve: "P-256"
+            },
+            true,
+            []
+        );
+    }
+
+    // Derive Shared Secret (AES-GCM Key) from My Private + Peer Public
+    async function deriveSharedSecret(privateKey, publicKey) {
         return window.crypto.subtle.deriveKey(
             {
-                name: "PBKDF2",
-                salt: enc.encode("GHOST_CHAT_SALT"), // In prod, random salt is better, but strictly shared secret requires static salt or shared salt
-                iterations: 100000,
-                hash: "SHA-256"
+                name: "ECDH",
+                public: publicKey
             },
-            keyMaterial,
-            { name: "AES-GCM", length: 256 },
+            privateKey,
+            {
+                name: "AES-GCM",
+                length: 256
+            },
             false,
             ["encrypt", "decrypt"]
         );
