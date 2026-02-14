@@ -530,7 +530,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function scrambleText(node, finalText) {
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*";
-        const len = finalText.length;
+        // Use Array.from to correctly handle emojis (surrogate pairs)
+        const finalTextArray = Array.from(finalText);
+        const len = finalTextArray.length;
 
         // Fixed Duration: 1 Second (1000ms)
         const duration = 1000;
@@ -551,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let result = "";
             for (let i = 0; i < len; i++) {
                 if (i < Math.floor(revealedCount)) {
-                    result += finalText[i];
+                    result += finalTextArray[i];
                 } else {
                     result += chars[Math.floor(Math.random() * chars.length)];
                 }
