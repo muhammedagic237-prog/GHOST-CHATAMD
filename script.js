@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let roomKey = null; // Shared Secret (AES-GCM)
     let myKeyPair = null; // Ephemeral ECDH Key Pair
     let remotePublicKey = null; // Peer's Public Key
+    let loginTime = 0; // Timestamp of when I joined
 
     // --- PANIC BUTTON ---
     // ...
@@ -125,6 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (user.length > 0 && roomName.length > 0) {
             username = user;
+            loginTime = Date.now(); // Mark session start
 
             try {
                 addSystemMessage(`CONNECTING TO SECURE ROOM: ${roomName}...`);
@@ -389,6 +391,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function startChatListener() {
         db.collection('messages')
             .orderBy('timestamp') // Ensure index exists in Firestore!
+            .where('timestamp', '>', loginTime) // Only New Messages (Ephemeral History)
             .limitToLast(50)      // Only get recent messages
             .onSnapshot((snapshot) => {
                 snapshot.docChanges().forEach(async (change) => {
@@ -482,12 +485,26 @@ document.addEventListener('DOMContentLoaded', () => {
     function scrambleText(node, finalText) {
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*";
         const len = finalText.length;
-        let iterations = 0;
+
+        // Fixed Duration: 1 Second (1000ms)
+        const duration = 1000;
+        const intervalTime = 30;
+        const totalSteps = duration / intervalTime; // ~33 frames
+
+        // Calculate how many characters to reveal per step
+        // We need to reveal 'len' characters over 'totalSteps'
+        const charsPerStep = len / totalSteps;
+
+        let currentStep = 0;
+        let revealedCount = 0;
 
         const interval = setInterval(() => {
+            currentStep++;
+            revealedCount += charsPerStep;
+
             let result = "";
             for (let i = 0; i < len; i++) {
-                if (i < iterations) {
+                if (i < Math.floor(revealedCount)) {
                     result += finalText[i];
                 } else {
                     result += chars[Math.floor(Math.random() * chars.length)];
@@ -498,15 +515,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Keep scrolled to bottom during animation (important for mobile)
             scrollToBottom();
 
-            if (iterations >= len) {
+            if (currentStep >= totalSteps) {
                 clearInterval(interval);
-                node.textContent = finalText;
+                node.textContent = finalText; // Ensure clean finish
                 scrollToBottom();
             }
-
-            // Slower reveal for mobile visibility (approx 60ms per char)
-            iterations += 1 / 2;
-        }, 30); // 30ms tick (slower than 15ms)
+        }, intervalTime);
     }
 
     function scrollToBottom() {
