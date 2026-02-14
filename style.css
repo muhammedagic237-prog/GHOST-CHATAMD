@@ -141,7 +141,56 @@ body {
     }
 }
 
-/* Login & Chat Layers */
+
+
+/* Protection Layer */
+#protection-layer {
+    position: absolute;
+    inset: 0;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 90;
+    /* Below Intro (100) but above Login (10) */
+    color: #fff;
+    font-family: 'Courier New', Courier, monospace;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+
+#protection-layer.visible {
+    opacity: 1;
+}
+
+.protection-content {
+    text-align: center;
+    border: 2px solid #fff;
+    padding: 30px 50px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    background: #000;
+}
+
+.shield-icon {
+    font-size: 4rem;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px #fff;
+}
+
+.protection-text {
+    font-size: 2rem;
+    font-weight: bold;
+    letter-spacing: 5px;
+    text-shadow: 0 0 5px #fff;
+}
+
+.protection-sub {
+    font-size: 0.8rem;
+    margin-top: 5px;
+    letter-spacing: 2px;
+    color: #aaa;
+}
+
 .hidden {
     display: none !important;
 }

@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const introLayer = document.getElementById('intro-layer');
+    const protectionLayer = document.getElementById('protection-layer');
     const loginLayer = document.getElementById('login-layer');
     const chatLayer = document.getElementById('chat-layer');
     const usernameInput = document.getElementById('username-input');
@@ -114,9 +115,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // ... (Existing Code) ...
 
     // 1. Intro Sequence
+    // 0s - 3.5s: GHOST AMD Intro plays (CSS Animation)
     setTimeout(() => {
-        loginLayer.classList.remove('hidden');
-        usernameInput.focus();
+        // 3.5s: Intro fades out (handled by CSS forwards), Show Protection Layer
+        protectionLayer.classList.remove('hidden');
+        protectionLayer.classList.add('visible');
+
+        // 2s Duration for Protection Splash
+        setTimeout(() => {
+            protectionLayer.classList.remove('visible');
+            setTimeout(() => {
+                protectionLayer.classList.add('hidden'); // Fully hide after fade
+                loginLayer.classList.remove('hidden');   // Show Login
+                usernameInput.focus();
+            }, 500); // 0.5s fade out match
+        }, 2000);
+
     }, 3500);
 
     // 2. Login Handler (Room Handshake)
