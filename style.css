@@ -1,6 +1,8 @@
 body {
-    background-color: #000;
-    color: #0f0;
+    background-color: #050505;
+    /* Deep Black/Grey */
+    color: #e0e0e0;
+    /* Cool White */
     font-family: 'Courier New', Courier, monospace;
     margin: 0;
     padding: 0;
@@ -10,6 +12,13 @@ body {
     justify-content: center;
     align-items: center;
     position: relative;
+    /* Variables for easy theming */
+    --accent: #00f3ff;
+    /* Electric Cyan */
+    --accent-dim: rgba(0, 243, 255, 0.2);
+    --text: #e0e0e0;
+    --bg: #050505;
+    --dim: #888;
 }
 
 #matrix-canvas {
@@ -208,20 +217,28 @@ body {
 .chat-input-area {
     display: flex;
     align-items: center;
-    border-bottom: 2px solid #0f0;
+    border-bottom: 1px solid #333;
     padding-bottom: 5px;
+    transition: border-bottom-color 0.3s;
+}
+
+.input-container:focus-within,
+.chat-input-area:focus-within {
+    border-bottom-color: var(--accent);
+    box-shadow: 0 1px 0 var(--accent);
 }
 
 .prompt {
     margin-right: 10px;
     font-weight: bold;
-    text-shadow: 0 0 5px #0f0;
+    color: var(--accent);
+    text-shadow: 0 0 5px var(--accent-dim);
 }
 
 input {
     background: transparent;
     border: none;
-    color: #0f0;
+    color: var(--text);
     font-family: 'Courier New', Courier, monospace;
     font-size: 1.2rem;
     width: 100%;
@@ -230,27 +247,30 @@ input {
 }
 
 input::placeholder {
-    color: #004400;
+    color: #444;
+    font-style: italic;
 }
 
 /* Cyber Buttons */
 .cyber-btn {
     background: transparent;
-    border: 1px solid #0f0;
-    color: #0f0;
+    border: 1px solid var(--accent);
+    color: var(--accent);
     font-family: inherit;
     cursor: pointer;
     margin-left: 10px;
-    padding: 5px 10px;
+    padding: 6px 15px;
     text-transform: uppercase;
     font-weight: bold;
     transition: all 0.2s;
+    /* jagged corner */
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
 }
 
 .cyber-btn:hover {
-    background: #0f0;
+    background: var(--accent);
     color: #000;
-    box-shadow: 0 0 10px #0f0;
+    box-shadow: 0 0 15px var(--accent);
 }
 
 .cyber-btn.panic {
@@ -265,10 +285,11 @@ input::placeholder {
 }
 
 .cyber-btn.send {
-    border-color: #0f0;
-    color: #0f0;
+    border-color: var(--accent);
+    color: var(--accent);
     font-size: 1.1rem;
     padding: 8px 15px;
+    background: rgba(0, 243, 255, 0.05);
 }
 
 @media (max-width: 600px) {
@@ -316,14 +337,21 @@ input::placeholder {
     flex-direction: column;
     justify-content: flex-end;
     /* Start from bottom */
-    border: 1px solid #004400;
     padding: 10px;
+    /* Glassmorphism */
+    background: rgba(10, 10, 10, 0.6);
+    backdrop-filter: blur(5px);
+    border: 1px solid #222;
+    border-left: 2px solid var(--accent);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 
 .system-msg {
-    color: #008800;
-    font-style: italic;
+    color: var(--dim);
+    font-size: 0.8rem;
     margin-bottom: 5px;
+    border-left: 2px solid #333;
+    padding-left: 8px;
 }
 
 .chat-msg {
@@ -355,11 +383,16 @@ input::placeholder {
 }
 
 ::-webkit-scrollbar-track {
-    background: #001100;
+    background: #050505;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #0f0;
+    background: #333;
+    border: 1px solid #000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
 }
 
 /* Security Badges */
@@ -383,23 +416,27 @@ input::placeholder {
 }
 
 .badge {
-    border: 1px solid #0f0;
-    color: #0f0;
+    border: 1px solid var(--accent);
+    color: var(--accent);
     padding: 5px 10px;
     font-size: 0.8rem;
     font-weight: bold;
     text-transform: uppercase;
-    background: rgba(0, 20, 0, 0.8);
-    box-shadow: 0 0 5px #0f0;
-    opacity: 0.7;
-    transition: opacity 0.3s;
+    background: rgba(0, 20, 0, 0.4);
+    /* Keep slight green hint or go dark? pure dark for consistency */
+    background: rgba(0, 0, 0, 0.8);
+    box-shadow: 0 0 5px var(--accent-dim);
+    opacity: 0.8;
+    transition: all 0.3s;
     text-align: center;
+    letter-spacing: 1px;
 }
 
 .badge:hover {
     opacity: 1;
-    box-shadow: 0 0 10px #0f0;
+    box-shadow: 0 0 15px var(--accent);
     cursor: help;
+    background: var(--accent-dim);
 }
 
 @media (max-width: 800px) {

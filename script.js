@@ -494,8 +494,8 @@ document.addEventListener('DOMContentLoaded', () => {
             hash = username.charCodeAt(i) + ((hash << 5) - hash);
         }
 
-        // Colors: Neon Blue, Neon Red, Neon Orange, Neon Green (Default)
-        const colors = ['#0088ff', '#ff3333', '#ffa500', '#0f0'];
+        // Colors: Cyber Cyan, Neon Purple, Bright Teal, White
+        const colors = ['#00f3ff', '#bc13fe', '#00ff9d', '#ffffff'];
         const index = Math.abs(hash % colors.length);
         return colors[index];
     }
@@ -607,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.fillStyle = '#0001'; // Very translucent black to leave trails
         ctx.fillRect(0, 0, width, height);
 
-        ctx.fillStyle = '#0f0';
+        ctx.fillStyle = '#00f3ff'; // Cyber Cyan (was #0f0)
         ctx.font = '15pt monospace';
 
         ypos.forEach((y, ind) => {
