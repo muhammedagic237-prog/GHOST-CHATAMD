@@ -394,6 +394,10 @@ input::placeholder {
     position: relative;
     /* Transformation context for floating messages */
     transform-style: preserve-3d;
+
+    /* Flex Layout for Message Alignment */
+    display: flex;
+    flex-direction: column;
 }
 
 /* Secretive Scanline Overlay for Chat Window only */
@@ -444,6 +448,32 @@ input::placeholder {
     /* 3D Pop Out */
     transform: translateZ(10px);
     transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
+
+    /* Sizing */
+    max-width: 80%;
+    width: fit-content;
+}
+
+/* SELF (Right Side) */
+.chat-msg.self {
+    align-self: flex-end;
+    border-left: 1px solid rgba(0, 243, 255, 0.5);
+    border-right: 3px solid var(--accent);
+    border-radius: 16px;
+    border-bottom-right-radius: 4px;
+    /* Tail right */
+    background: rgba(0, 243, 255, 0.05);
+    /* Slight Cyan Tint */
+    text-align: right;
+}
+
+/* PEER (Left Side) */
+.chat-msg.peer {
+    align-self: flex-start;
+    border-left: 3px solid #fff;
+    border-bottom-left-radius: 4px;
+    /* Tail left */
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .chat-msg:hover {

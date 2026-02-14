@@ -502,7 +502,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function addMessage(user, content, type) {
         const div = document.createElement('div');
-        div.className = 'chat-msg';
+
+        // Determine alignment class
+        const isSelf = (user === "YOU");
+        div.className = isSelf ? 'chat-msg self' : 'chat-msg peer';
 
         // Sanitize Username
         const safeUser = user.replace(/</g, "&lt;").replace(/>/g, "&gt;");
