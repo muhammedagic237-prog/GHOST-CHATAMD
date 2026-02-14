@@ -439,6 +439,16 @@ input::placeholder {
     text-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
 }
 
+/* Watermark: Absolute position for Intro/Login Screens */
+#protection-layer .chat-watermark,
+#login-layer .chat-watermark {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    margin: 0;
+    align-self: auto;
+}
+
 .system-msg {
     position: relative;
     z-index: 10;
