@@ -152,7 +152,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 3. Listen for PEER keys
                 roomRef.onSnapshot(async (snapshot) => {
                     snapshot.docChanges().forEach(async (change) => {
-                        if (change.type === "added") {
+                        // Handle both NEW peers (added) and REFRESHED peers (modified)
+                        if (change.type === "added" || change.type === "modified") {
                             const data = change.doc.data();
                             const peerName = change.doc.id;
 
