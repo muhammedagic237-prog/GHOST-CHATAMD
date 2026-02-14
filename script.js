@@ -327,7 +327,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (e) {
             console.error("Decryption failed:", e);
-            return null; // Return null on failure logic
+            // Return error object instead of null for UI feedback
+            return {
+                user: "SYSTEM",
+                content: "🔒 UNDECRYPTABLE MESSAGE (WRONG KEY)",
+                type: "error"
+            };
         }
     }
 
@@ -456,6 +461,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (type === 'image') {
             div.innerHTML = `${userSpan} <br><img src="${content}" class="chat-img" onclick="window.open(this.src)">`;
+        } else if (type === 'error') {
+            div.style.color = 'red';
+            div.textContent = `> ${content}`;
         } else {
             // Sanitize Content or use textNode
             const textContent = document.createTextNode(" " + content);
