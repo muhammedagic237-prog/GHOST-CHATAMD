@@ -431,14 +431,17 @@ input::placeholder {
     font-weight: 900;
     font-size: 0.75rem;
     letter-spacing: 3px;
-    color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.1);
     /* Ghostly */
-    z-index: 5;
+    z-index: 1;
+    /* BACKGROUND LAYER */
     pointer-events: none;
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
 }
 
 .system-msg {
+    position: relative;
+    z-index: 10;
     color: var(--dim);
     font-size: 0.8rem;
     margin-bottom: 5px;
@@ -448,6 +451,8 @@ input::placeholder {
 
 .chat-msg {
     position: relative;
+    z-index: 10;
+    /* FOREGROUND LAYER (Always readable) */
     margin-bottom: 14px;
     /* More breathing room */
     word-wrap: break-word;
