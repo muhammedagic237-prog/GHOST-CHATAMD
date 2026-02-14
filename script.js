@@ -524,6 +524,15 @@ document.addEventListener('DOMContentLoaded', () => {
             scrambleText(textNode, " " + content);
         }
 
+        // --- PWA LOCAL NOTIFICATION ---
+        if (document.hidden && Notification.permission === "granted" && user !== "YOU" && type !== 'error') {
+            new Notification(`GHOST: ${safeUser}`, {
+                body: "New Encrypted Transmission 🔒",
+                icon: "icon-192.png",
+                tag: "ghost-msg"
+            });
+        }
+
         chatWindow.appendChild(div);
         scrollToBottom();
     }
@@ -734,4 +743,21 @@ document.addEventListener('DOMContentLoaded', () => {
             tapCount = 0; // Reset
         }
     });
+
+    // --- PWA & NOTIFICATIONS SETUP ---
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js')
+            .then(reg => console.log('SW Registered', reg))
+            .catch(err => console.log('SW Fail', err));
+    }
+
+    function requestNotificationPermission() {
+        if ('Notification' in window && Notification.permission !== 'granted') {
+            Notification.requestPermission();
+        }
+    }
+
+    // Request on interaction
+    usernameInput.addEventListener('focus', requestNotificationPermission);
+    keyInput.addEventListener('focus', requestNotificationPermission);
 });
