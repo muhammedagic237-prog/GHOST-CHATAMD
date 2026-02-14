@@ -96,33 +96,39 @@ body {
 
 /* Ghost: Floats up and dissolves like vapor */
 /* Ghost: Blown UP and Away (Wind Gust) */
+/* Ghost: Apparition Dissolve (Foggy/Smoky) */
 @keyframes blowAwayGhost {
     0% {
         opacity: 0;
-        transform: scale(0.9) translateY(20px);
-        filter: blur(5px);
+        transform: scale(0.95);
+        filter: blur(8px);
+        letter-spacing: 5px;
     }
 
     20% {
         opacity: 1;
         transform: scale(1) translateY(0);
-        filter: blur(2px);
+        filter: blur(1px);
+        /* Almost clear */
+        letter-spacing: 15px;
+        /* Normal spacing */
     }
 
     50% {
         opacity: 1;
         transform: scale(1) translateY(0);
-        filter: blur(2px);
+        filter: blur(1px);
+        letter-spacing: 15px;
     }
 
     100% {
         opacity: 0;
-        transform: scale(1.1) translateY(-100px) translateX(50px);
-        /* Up and Right */
-        filter: blur(25px);
-        /* Heavy fog blur */
-        letter-spacing: 40px;
-        /* Expands */
+        transform: scale(1.1) translateY(-60px);
+        /* Floats up like smoke */
+        filter: blur(20px);
+        /* Becomes fog */
+        letter-spacing: 50px;
+        /* Particles separate */
     }
 }
 
