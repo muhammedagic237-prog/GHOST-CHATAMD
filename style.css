@@ -49,47 +49,77 @@ body {
 
 .ghost-text {
     font-size: 10.4rem;
-    /* 30% bigger than 8rem */
     color: transparent;
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.4);
-    animation: blowAway 4s ease-out forwards;
+    animation: blowAwayGhost 4s ease-out forwards;
     letter-spacing: 15px;
-    filter: blur(0px);
-    /* Less foggish start */
+    filter: blur(2px);
+    /* Starts slightly foggy */
 }
 
 
 
 /* ... */
 
-/* Red Text for AMD */
+/* Red Text for AMD (Sharper start) */
 .red-text {
-    /* Use transparent color for ghost effect text */
-    text-shadow: 0 0 10px rgba(255, 0, 0, 0.8), 0 0 20px rgba(255, 0, 0, 0.4);
+    text-shadow: 0 0 5px rgba(255, 0, 0, 0.9), 0 0 15px rgba(255, 0, 0, 0.5);
+    /* Crisper shadow */
+    animation: blowAwayAMD 4s ease-out forwards;
+    /* Separate animation */
+    filter: blur(0px);
+    /* Crystal clear start */
 }
 
 .ghost-text.small {
     font-size: 5.2rem;
-    /* 30% bigger than 4rem */
     margin-top: -20px;
-    /* Pull it up slightly */
 }
 
-@keyframes blowAway {
+/* Ghost: Floats up and dissolves like vapor */
+@keyframes blowAwayGhost {
     0% {
         opacity: 0;
-        transform: scale(0.8);
-        filter: blur(10px);
+        transform: scale(0.9) translateY(20px);
+        filter: blur(5px);
     }
 
     20% {
         opacity: 1;
-        transform: scale(1);
-        filter: blur(0px);
-        /* Sharp momentarily */
+        transform: scale(1) translateY(0);
+        filter: blur(2px);
     }
 
-    40% {
+    50% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        filter: blur(2px);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(1.2) translateY(-50px) translateX(20px);
+        /* Drifts up/right */
+        filter: blur(20px);
+        letter-spacing: 30px;
+    }
+}
+
+/* AMD: Sharp blast to the side (Heavy Wind) */
+@keyframes blowAwayAMD {
+    0% {
+        opacity: 0;
+        transform: scale(0.8) skewX(-20deg);
+        filter: blur(0px);
+    }
+
+    20% {
+        opacity: 1;
+        transform: scale(1) skewX(0deg);
+        filter: blur(0px);
+    }
+
+    50% {
         opacity: 1;
         transform: scale(1);
         filter: blur(0px);
@@ -97,10 +127,10 @@ body {
 
     100% {
         opacity: 0;
-        transform: scale(1.5);
-        filter: blur(20px);
-        /* Blown away like fog */
-        letter-spacing: 50px;
+        transform: scale(1.1) translateX(150px) skewX(30deg);
+        /* Blows hard right */
+        filter: blur(10px);
+        letter-spacing: 20px;
     }
 }
 
