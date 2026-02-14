@@ -382,13 +382,15 @@ input::placeholder {
     /* Start from bottom */
     padding: 20px;
     /* Inner Glass */
-    background: rgba(0, 0, 0, 0.4);
-    /* Darker base */
-    border-radius: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.03);
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    /* Highlight Top */
-    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
+    /* iOS Glass Style (Premium Frost) */
+    background: rgba(22, 22, 22, 0.6);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    /* Sharper, brighter edge */
+    box-shadow: 0 8px 32px 0 rgba(0, 243, 255, 0.08);
+    /* Soft colored glow */
     position: relative;
     /* Transformation context for floating messages */
     transform-style: preserve-3d;
@@ -419,29 +421,36 @@ input::placeholder {
 
 .chat-msg {
     position: relative;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
+    /* More breathing room */
     word-wrap: break-word;
     font-family: 'Courier New', monospace;
     font-size: 1rem;
     line-height: 1.5;
-    padding: 10px 14px;
+    padding: 12px 16px;
 
-    /* 3D Glass Bubble */
-    background: rgba(255, 255, 255, 0.03);
-    backdrop-filter: blur(4px);
-    border-left: 2px solid var(--accent);
-    border-radius: 0 12px 12px 12px;
-    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+    /* iOS Glass Bubble (Milky/Frosted) */
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 3px solid var(--accent);
+    /* Accent stripe remains */
+    border-radius: 16px;
+    border-bottom-left-radius: 4px;
+    /* Message tail effect */
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 
     /* 3D Pop Out */
     transform: translateZ(10px);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
 }
 
 .chat-msg:hover {
-    transform: translateZ(15px) scale(1.01);
-    box-shadow: 0 10px 25px rgba(0, 243, 255, 0.1);
-    background: rgba(255, 255, 255, 0.05);
+    transform: translateZ(20px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(0, 243, 255, 0.15);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.3);
 }
 
 .chat-msg .user {
