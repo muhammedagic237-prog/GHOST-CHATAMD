@@ -119,7 +119,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         // 3.5s: Intro fades out (handled by CSS forwards), Show Protection Layer
         protectionLayer.classList.remove('hidden');
-        protectionLayer.classList.add('visible');
+
+        // Micro-delay ensures transition plays smoothly (prevents "snap")
+        setTimeout(() => {
+            protectionLayer.classList.add('visible');
+        }, 50);
 
         // 2s Duration for Protection Splash
         setTimeout(() => {
