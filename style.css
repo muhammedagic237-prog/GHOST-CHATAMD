@@ -312,3 +312,51 @@ input::placeholder {
 ::-webkit-scrollbar-thumb {
     background: #0f0;
 }
+
+/* Security Badges */
+#security-badges {
+    position: absolute;
+    top: 20px;
+    right: -140px;
+    /* Outside main chat area on desktop */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.badge {
+    border: 1px solid #0f0;
+    color: #0f0;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    background: rgba(0, 20, 0, 0.8);
+    box-shadow: 0 0 5px #0f0;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+    text-align: center;
+}
+
+.badge:hover {
+    opacity: 1;
+    box-shadow: 0 0 10px #0f0;
+    cursor: help;
+}
+
+@media (max-width: 800px) {
+    #security-badges {
+        position: static;
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+        width: 100%;
+        margin-bottom: 10px;
+        right: auto;
+    }
+
+    .badge {
+        font-size: 0.6rem;
+        padding: 2px 5px;
+    }
+}

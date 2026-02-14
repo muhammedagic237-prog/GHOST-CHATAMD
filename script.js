@@ -467,13 +467,41 @@ document.addEventListener('DOMContentLoaded', () => {
             div.textContent = `> ${content}`;
         } else {
             // Sanitize Content or use textNode
-            const textContent = document.createTextNode(" " + content);
             div.innerHTML = `${userSpan}`;
-            div.appendChild(textContent);
+            const textNode = document.createTextNode(""); // Start empty
+            div.appendChild(textNode);
+
+            // Scramble Effect for new messages
+            scrambleText(textNode, " " + content);
         }
 
         chatWindow.appendChild(div);
         scrollToBottom();
+    }
+
+    function scrambleText(node, finalText) {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*";
+        const len = finalText.length;
+        let iterations = 0;
+
+        const interval = setInterval(() => {
+            let result = "";
+            for (let i = 0; i < len; i++) {
+                if (i < iterations) {
+                    result += finalText[i];
+                } else {
+                    result += chars[Math.floor(Math.random() * chars.length)];
+                }
+            }
+            node.textContent = result;
+
+            if (iterations >= len) {
+                clearInterval(interval);
+                node.textContent = finalText;
+            }
+
+            iterations += 1 / 2; // Controls speed (higher denominator = slower)
+        }, 15); // Refresh rate
     }
 
     function scrollToBottom() {
@@ -498,7 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // FPS Loop
     let lastTime = 0;
-    const fps = 24; // Cinematic 24fps is enough for matrix, saves battery
+    const fps = 48; // Doubled speed as requested (was 24)
     const interval = 1000 / fps;
 
     function matrix(currentTime) {
