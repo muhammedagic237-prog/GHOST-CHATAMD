@@ -14,6 +14,9 @@ body {
     justify-content: center;
     align-items: center;
     position: relative;
+    height: 100vh;
+    height: 100dvh;
+    /* Mobile viewport fix */
     /* Variables for easy theming */
     --accent: #00f3ff;
     /* Electric Cyan */
@@ -39,17 +42,21 @@ body {
 
 /* Intro Animation */
 #intro-layer {
-    position: absolute;
+    position: fixed;
+    /* Was absolute, fixed ensures full viewport coverage */
     inset: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 100;
+    z-index: 9999;
+    /* Highest Z-index */
     /* Top */
     background: #000;
     animation: fadeOut 0.5s ease-in forwards;
     animation-delay: 3s;
     /* Wait 3 seconds before disappearing */
+    transform: none;
+    /* Reset any potential 3D interference */
 }
 
 .intro-container {
@@ -328,14 +335,16 @@ input::placeholder {
 
     /* Mobile Text Sizing */
     .ghost-text {
-        font-size: 5.2rem;
-        /* Scaled UP for mobile */
+        font-size: 4rem;
+        /* Reduced from 5.2rem */
+        /* Scaled appropriately for mobile */
         letter-spacing: 5px;
     }
 
     .ghost-text.small {
-        font-size: 2.6rem;
-        /* Scaled UP for mobile */
+        font-size: 2rem;
+        /* Reduced from 2.6rem */
+        /* Scaled appropriately for mobile */
         margin-top: -10px;
     }
 
