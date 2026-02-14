@@ -26,6 +26,13 @@ body {
     --dim: #888;
 }
 
+/* iOS Zoom Fix: Force 16px on inputs to prevent auto-zoom */
+input,
+textarea,
+select {
+    font-size: 16px !important;
+}
+
 #matrix-canvas {
     position: absolute;
     top: 0;

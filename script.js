@@ -415,7 +415,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 // UX: Re-enable
                 messageInput.disabled = false;
                 sendBtn.disabled = false;
-                messageInput.focus();
+
+                // MOBILE UX: Auto-dismiss keyboard to prevent zoom/obscuring
+                messageInput.blur();
+                // messageInput.focus(); // REMOVED: Re-focusing keeps keyboard up
             }
         }
     };
