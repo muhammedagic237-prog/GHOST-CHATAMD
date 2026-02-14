@@ -413,6 +413,29 @@ input::placeholder {
     opacity: 0.3;
     mix-blend-mode: overlay;
     border-radius: 16px;
+    opacity: 0.3;
+    mix-blend-mode: overlay;
+    border-radius: 16px;
+}
+
+/* Watermark: Top Right Corner of Chat */
+.chat-watermark {
+    position: sticky;
+    top: 15px;
+    align-self: flex-end;
+    margin-right: 20px;
+    margin-bottom: -25px;
+    /* OVERLAY mode: Don't push content down */
+
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.15);
+    /* Ghostly */
+    z-index: 5;
+    pointer-events: none;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
 }
 
 .system-msg {
