@@ -121,12 +121,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Login Handler (Room Handshake)
     const handleLogin = async () => {
         const user = usernameInput.value.trim();
-        const roomName = keyInput.value.trim(); // "Key Code" input is now Room Name
+        const roomName = keyInput.value.trim().toUpperCase(); // "Key Code" input is now Room Name
 
         if (user.length > 0 && roomName.length > 0) {
             username = user;
 
             try {
+                addSystemMessage(`CONNECTING TO SECURE ROOM: ${roomName}...`);
                 addSystemMessage("GENERATING EPHEMERAL KEYS...");
                 myKeyPair = await generateKeyPair();
 
