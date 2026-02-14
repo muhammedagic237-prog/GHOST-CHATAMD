@@ -324,6 +324,15 @@ input::placeholder {
     gap: 10px;
 }
 
+#security-badges-login {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
 .badge {
     border: 1px solid #0f0;
     color: #0f0;
