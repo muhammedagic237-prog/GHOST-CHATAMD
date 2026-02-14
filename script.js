@@ -495,13 +495,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             node.textContent = result;
 
+            // Keep scrolled to bottom during animation (important for mobile)
+            scrollToBottom();
+
             if (iterations >= len) {
                 clearInterval(interval);
                 node.textContent = finalText;
+                scrollToBottom();
             }
 
-            iterations += 1 / 2; // Controls speed (higher denominator = slower)
-        }, 15); // Refresh rate
+            // Slower reveal for mobile visibility (approx 60ms per char)
+            iterations += 1 / 2;
+        }, 30); // 30ms tick (slower than 15ms)
     }
 
     function scrollToBottom() {

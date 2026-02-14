@@ -351,12 +351,23 @@ input::placeholder {
         justify-content: center;
         flex-wrap: wrap;
         width: 100%;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
+        /* Reduced margin */
         right: auto;
+        gap: 5px;
+        /* Tighter gap */
     }
 
     .badge {
-        font-size: 0.6rem;
-        padding: 2px 5px;
+        font-size: 0.55rem;
+        /* Slightly smaller for mobile fitting */
+        padding: 2px 4px;
+        border-width: 1px;
+    }
+
+    /* Ensure chat window uses remaining space effectively */
+    #chat-window {
+        height: 65vh;
+        /* Adjust for badges taking top space */
     }
 }
