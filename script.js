@@ -330,7 +330,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (e) {
             console.error("Decryption failed:", e);
-            // Return error object instead of null for UI feedback
+
+            // SOFT FILTER: If message is old history, just ignore it (return null)
+            // instead of showing "Undecryptable" error.
+            if (packedJson) {
+                try {
+                    const tmp = JSON.parse(packedJson);
+                    // We don't have timestamp here easily unless passed in, 
+                    // but we can rely on the fact that if we just logged in, 
+                    // and we can't decrypt it, it's probably history.
+                    // Ideally we pass timestamp to decryptMessage.
+                } catch (e) { }
+            }
+
+            // Better Approach: Handle this in the caller (startChatListener)
+            // returning error object here is fine, caller decides to show it or not.
             return {
                 user: "SYSTEM",
                 content: "🔒 UNDECRYPTABLE MESSAGE (WRONG KEY)",
@@ -340,6 +354,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const TTL_MS = 17 * 60 * 1000 + 40 * 1000; // 17m 40s (1060000 ms)
+
+    // Helper: Check if message is from before I joined (Soft Filter)
+    function isOldMessage(timestamp) {
+        // If message timestamp is OLDER than my login time, it's history
+        // Add 5s buffer for clock skew
+        return timestamp < (loginTime - 5000);
+    }
 
     // 4. Message Handler (Firestore Send)
     const sendMessage = async () => {
@@ -391,7 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function startChatListener() {
         db.collection('messages')
             .orderBy('timestamp') // Ensure index exists in Firestore!
-            .where('timestamp', '>', loginTime) // Only New Messages (Ephemeral History)
+            // .where('timestamp', '>', loginTime) // Removed strict filter to avoid clock skew issues
             .limitToLast(50)      // Only get recent messages
             .onSnapshot((snapshot) => {
                 snapshot.docChanges().forEach(async (change) => {
@@ -414,6 +435,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             const decryptedObj = await decryptMessage(data.payload);
 
                             if (decryptedObj) {
+                                // SOFT FILTER LOGIC:
+                                // If error AND message is old -> Ignore
+                                if (decryptedObj.type === 'error' && isOldMessage(data.timestamp)) {
+                                    console.log("Ignoring old undecryptable message");
+                                    return;
+                                }
+
                                 // Extract user, content, type from the decrypted object
                                 const user = decryptedObj.user || "UNKNOWN";
                                 const content = decryptedObj.content;
@@ -513,12 +541,13 @@ document.addEventListener('DOMContentLoaded', () => {
             node.textContent = result;
 
             // Keep scrolled to bottom during animation (important for mobile)
-            scrollToBottom();
+            // REMOVED: scrollToBottom() inside loop causes mobile jank
+            // scrollToBottom(); 
 
             if (currentStep >= totalSteps) {
                 clearInterval(interval);
                 node.textContent = finalText; // Ensure clean finish
-                scrollToBottom();
+                scrollToBottom(); // Only scroll at the end
             }
         }, intervalTime);
     }
