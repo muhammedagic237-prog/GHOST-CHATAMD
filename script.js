@@ -22,30 +22,116 @@ document.addEventListener('DOMContentLoaded', () => {
     // ...
 
     // --- PANIC BUTTON ---
-    panicBtn.addEventListener('click', async () => {
-        if (confirm("⚠️ NUCLEAR OPTION ⚠️\n\n1. Wipe Local Keys (Memory)\n2. Delete All Messages\n3. Reload App")) {
+    // --- PANIC BUTTON ---
+    const panicHTML = `
+        <div id="panic-overlay" style="
+            position: fixed; 
+            inset: 0; 
+            background: #000; 
+            z-index: 100000; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            font-family: 'Courier New', monospace; 
+            color: #ff0000; 
+            overflow: hidden;
+        ">
+            <h1 style="font-size: 32px; font-weight: bold; text-shadow: 0 0 10px #ff0000; margin-bottom: 20px;">⚠ SYSTEM DESTRUCTION ⚠</h1>
+            <div id="panic-log" style="
+                width: 90%; 
+                height: 200px; 
+                font-size: 14px; 
+                text-align: left; 
+                overflow: hidden; 
+                opacity: 0.8; 
+                mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+            "></div>
+            <div style="
+                margin-top: 20px; 
+                width: 80%; 
+                height: 4px; 
+                background: #330000; 
+                border-radius: 2px;
+            ">
+                <div id="panic-progress" style="
+                    width: 0%; 
+                    height: 100%; 
+                    background: #ff0000; 
+                    box-shadow: 0 0 10px #ff0000; 
+                    transition: width 1.5s linear;
+                "></div>
+            </div>
+        </div>
+    `;
 
-            // 1. Wipe Memory
+    panicBtn.addEventListener('click', async () => {
+        if (confirm("⚠️ NUCLEAR OPTION ⚠️\n\n1. Wipe Local Keys (Memory)\n2. Delete All Messages\n3. CLOSE APP FOREVER")) {
+
+            // 1. Inject Animation
+            document.body.insertAdjacentHTML('beforeend', panicHTML);
+
+            // 2. Start Animation Loop
+            const logBox = document.getElementById('panic-log');
+            const progress = document.getElementById('panic-progress');
+
+            // Trigger CSS transition (next tick)
+            setTimeout(() => {
+                if (progress) progress.style.width = "100%";
+            }, 50);
+
+            const logs = [
+                "DELETING KEYS...",
+                "OVERWRITING MEMORY...",
+                "PURGING FIRESTORE...",
+                "SCRAMBLING CACHE...",
+                "Unlinking Device ID...",
+                "0x4F2A... DELETED",
+                "0x9B1C... DELETED",
+                "0xE3D4... DELETED",
+                "Disconnecting Peers...",
+                "SYSTEM HALTED."
+            ];
+
+            let i = 0;
+            const interval = setInterval(() => {
+                if (!logBox) return;
+                const line = document.createElement('div');
+                line.textContent = `> ${logs[i % logs.length]} [${Math.random().toString(16).substr(2, 8).toUpperCase()}]`;
+                logBox.prepend(line); // Add to top (scrolling down effect)
+                i++;
+            }, 100); // Fast scroll
+
+            // 3. ACTUAL WIPE (Background)
             roomKey = null;
             username = null;
-            roomPassword = null;
 
+            // Try to delete from DB
             try {
                 const snapshot = await db.collection('messages').get();
                 const batch = db.batch();
+                snapshot.docs.forEach((doc) => batch.delete(doc.ref));
+                // Fire and forget, don't await blocking the animation
+                batch.commit().catch(e => console.log("Wipe error (ignored)", e));
+            } catch (e) { }
 
-                snapshot.docs.forEach((doc) => {
-                    batch.delete(doc.ref);
-                });
+            // 4. THE END (1.5 Seconds)
+            setTimeout(() => {
+                clearInterval(interval);
+                document.body.innerHTML = ""; // Blackout
+                document.body.style.background = "#000";
 
-                await batch.commit();
-                console.log("NUCLEAR WIPE COMPLETE.");
+                // Attempt to Close
+                try {
+                    window.open('', '_self', '');
+                    window.close();
+                } catch (e) { }
 
-                // 3. Reload to clear any fragments
-                window.location.reload();
-            } catch (e) {
-                window.location.reload(); // Reload anyway
-            }
+                // Fallback: Redirect to about:blank or crash
+                setTimeout(() => {
+                    window.location.href = "about:blank";
+                }, 100);
+            }, 1500);
         }
     });
 
@@ -507,7 +593,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const div = document.createElement('div');
 
         // Determine alignment class
-        const isSelf = (user === "YOU");
+        // Check if message is from "YOU" (Local Echo) OR matches my username (Incoming Loop)
+        const isSelf = (user === "YOU" || user === username);
         div.className = isSelf ? 'chat-msg self' : 'chat-msg peer';
 
         // Sanitize Username
@@ -659,54 +746,142 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Decoy Mode (Spreadsheet)
     let decoyMode = false;
     const decoyHTML = `
-        <div id="decoy-overlay" style="position:fixed; inset:0; background:#fff; z-index:9999; font-family:Arial, sans-serif; color:#000; overflow-y:auto;">
-            <div style="background:#217346; color:white; padding:10px; font-weight:bold; font-size:14px;">Excel - Annual_Report.xlsx</div>
-            <div style="background:#f3f3f3; border-bottom:1px solid #ccc; padding:8px; display:flex; align-items:center;">
-                <span style="display:inline-block; width:20px; text-align:center; color:#999; font-size:12px;">fx</span>
-                <input type="text" value="=SUM(C2:C15)" style="width:100%; border:none; background:transparent; font-size:14px;">
+        <div id="decoy-overlay" style="
+            position: fixed; 
+            inset: 0; 
+            background: #fff; 
+            z-index: 99999; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            color: #000;
+            user-select: none;
+            -webkit-user-select: none;
+        ">
+            <!-- 1. Top Action Bar (Mobile Excel Style) -->
+            <div style="background: #107c41; color: white; display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <!-- Back Arrow -->
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg> 
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-size: 16px; font-weight: 600;">Financial_Q3.xlsx</span>
+                        <span style="font-size: 11px; opacity: 0.8;">Saved to OneDrive</span>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 20px;">
+                     <!-- Search Icon -->
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                    <!-- Share Icon -->
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+                    <!-- Menu -->
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                </div>
             </div>
-            <div style="overflow-x:auto;">
-                <table style="width:100%; min-width:350px; border-collapse:collapse; font-size:12px;">
-                    <tr style="background:#f3f3f3; text-align:center; color:#666;">
-                        <td style="border:1px solid #ccc; width:30px;"></td>
-                        <td style="border:1px solid #ccc; width:50px;">A</td>
-                        <td style="border:1px solid #ccc; width:80px;">B</td>
-                        <td style="border:1px solid #ccc; width:80px;">C</td>
-                        <td style="border:1px solid #ccc; width:60px;">D</td>
-                    </tr>
-                    <!-- Responsive Rows -->
-                    <tr>
-                        <td style="background:#f3f3f3; border:1px solid #ccc; text-align:center;">1</td>
-                        <td style="border:1px solid #eee; padding:4px;">Global</td>
-                        <td style="border:1px solid #eee; padding:4px;">Q1 2025</td>
-                        <td style="border:1px solid #eee; padding:4px;">Q2 2025</td>
-                        <td style="border:1px solid #eee; padding:4px;">%</td>
-                    </tr>
-                    <tr>
-                        <td style="background:#f3f3f3; border:1px solid #ccc; text-align:center;">2</td>
-                        <td style="border:1px solid #eee; padding:4px;">Rev</td>
-                        <td style="border:1px solid #eee; padding:4px;">$12k</td>
-                        <td style="border:1px solid #eee; padding:4px;">$14k</td>
-                        <td style="border:1px solid #eee; padding:4px; color:green;">+14%</td>
-                    </tr>
-                    <tr>
-                        <td style="background:#f3f3f3; border:1px solid #ccc; text-align:center;">3</td>
-                        <td style="border:1px solid #eee; padding:4px;">Exp</td>
-                        <td style="border:1px solid #eee; padding:4px;">$8k</td>
-                        <td style="border:1px solid #eee; padding:4px;">$8.5k</td>
-                        <td style="border:1px solid #eee; padding:4px; color:red;">+5%</td>
-                    </tr>
-                     <tr>
-                        <td style="background:#f3f3f3; border:1px solid #ccc; text-align:center;">4</td>
-                         <td style="border:1px solid #eee; padding:4px;">Net</td>
-                        <td style="border:1px solid #eee; padding:4px;">$4k</td>
-                        <td style="border:1px solid #eee; padding:4px;">$5.7k</td>
-                        <td style="border:1px solid #eee; padding:4px; color:green;">+31%</td>
-                    </tr>
+
+            <!-- 2. Formula Bar -->
+            <div style="background: #f8f9fa; border-bottom: 1px solid #e1dfdd; padding: 6px 10px; display: flex; align-items: center; height: 32px;">
+                <span style="color: #666; font-style: italic; font-family: serif; font-weight: bold; font-size: 14px; margin-right: 12px; opacity: 0.6;">fx</span>
+                <div style="flex: 1; height: 20px; background: white; border: 1px solid #e1dfdd; padding-left: 6px; font-size: 12px; display: flex; align-items: center; color: #333;">
+                    =SUM(D4:D16)
+                </div>
+            </div>
+
+            <!-- 3. Spreadsheet Grid Area -->
+            <div style="flex: 1; overflow: auto; position: relative; background: #fff;">
+                <table style="border-collapse: collapse; min-width: 100%; table-layout: fixed;">
+                    <!-- Column Headers -->
+                    <thead style="position: sticky; top: 0; z-index: 10;">
+                        <tr style="background: #f3f2f1; height: 26px;">
+                            <th style="width: 32px; border-bottom: 1px solid #d4d4d4; border-right: 1px solid #d4d4d4;"></th>
+                            <th style="width: 60px; border: 1px solid #d4d4d4; color: #323130; font-weight: normal; font-size: 12px;">A</th>
+                            <th style="width: 80px; border: 1px solid #d4d4d4; color: #323130; font-weight: normal; font-size: 12px;">B</th>
+                            <th style="width: 80px; border: 1px solid #d4d4d4; color: #323130; font-weight: normal; font-size: 12px;">C</th>
+                            <th style="width: 80px; border: 1px solid #d4d4d4; color: #323130; font-weight: normal; font-size: 12px;">D</th>
+                            <th style="width: 80px; border: 1px solid #d4d4d4; color: #323130; font-weight: normal; font-size: 12px;">E</th>
+                        </tr>
+                    </thead>
+                    <tbody style="font-size: 13px; font-family: Calibri, 'Segoe UI', sans-serif;">
+                        <!-- Row 1 -->
+                        <tr style="height: 24px;">
+                            <td style="background: #f3f2f1; text-align: center; color: #323130; border-right: 1px solid #ccc; font-size: 11px;">1</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; font-weight: bold;">Category</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; font-weight: bold;">Q1</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; font-weight: bold;">Q2</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; font-weight: bold;">YTD</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; font-weight: bold;">%</td>
+                        </tr>
+                         <!-- Row 2 -->
+                         <tr style="height: 24px;">
+                            <td style="background: #f3f2f1; text-align: center; color: #323130; border-right: 1px solid #ccc; font-size: 11px;">2</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px;">Revenue</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; text-align: right;">12,500</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; text-align: right;">14,200</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; text-align: right;">26,700</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; color: green; text-align: right;">+12%</td>
+                        </tr>
+                        <!-- Row 3 -->
+                        <tr style="height: 24px;">
+                            <td style="background: #f3f2f1; text-align: center; color: #323130; border-right: 1px solid #ccc; font-size: 11px;">3</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px;">COGS</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; text-align: right;">4,100</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; text-align: right;">4,350</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; text-align: right;">8,450</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; color: red; text-align: right;">+6%</td>
+                        </tr>
+                        <!-- Row 4 -->
+                        <tr style="height: 24px;">
+                            <td style="background: #f3f2f1; text-align: center; color: #323130; border-right: 1px solid #ccc; font-size: 11px;">4</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px;">Gross</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; text-align: right;">8,400</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; text-align: right;">9,850</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; text-align: right;">18,250</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; color: green; text-align: right;">+17%</td>
+                        </tr>
+                        <!-- Row 5 (Selected) -->
+                        <tr style="height: 24px;">
+                            <td style="background: #f3f2f1; text-align: center; color: #323130; border-right: 1px solid #ccc; font-size: 11px;">5</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px;">Ops Exp</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; text-align: right;">2,200</td>
+                            <!-- Simulation of selected cell -->
+                            <td style="border: 2px solid #107c41; padding: 0 4px; text-align: right; position: relative;">
+                                2,150
+                                <!-- Selection Handle -->
+                                <div style="width: 8px; height: 8px; background: #107c41; position: absolute; bottom: -5px; right: -5px; border: 1px solid white;"></div>
+                            </td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; text-align: right;">4,350</td>
+                            <td style="border: 1px solid #e1dfdd; padding: 0 4px; color: green; text-align: right;">-2%</td>
+                        </tr>
+                        <!-- Filler Rows -->
+                         ${Array(25).fill(0).map((_, i) => `
+                            <tr style="height: 24px;">
+                                <td style="background: #f3f2f1; text-align: center; color: #323130; border-right: 1px solid #ccc; font-size: 11px;">${i + 6}</td>
+                                <td style="border: 1px solid #e1dfdd;"></td>
+                                <td style="border: 1px solid #e1dfdd;"></td>
+                                <td style="border: 1px solid #e1dfdd;"></td>
+                                <td style="border: 1px solid #e1dfdd;"></td>
+                                <td style="border: 1px solid #e1dfdd;"></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
                 </table>
             </div>
-            <div style="padding:20px; text-align:center; color:#999; font-size:10px;">
-                Sheet 1 | Sheet 2 | Sheet 3
+
+            <!-- 4. Bottom Tab Bar -->
+            <div style="background: #f8f9fa; border-top: 1px solid #e1dfdd; height: 40px; display: flex; align-items: center; padding-left: 10px;">
+                 <div style="padding: 6px 16px; background: #fff; border-bottom: 2px solid #107c41; font-size: 13px; color: #107c41; font-weight: 500;">
+                    Sheet1
+                 </div>
+                 <div style="padding: 6px 16px; font-size: 13px; color: #666;">
+                    Data_Source
+                 </div>
+                 <div style="padding: 6px 12px; font-size: 18px; color: #666; margin-left: 4px;">
+                    +
+                 </div>
+            </div>
+            
+            <!-- 5. Floating Action Button (New Entry) -->
+            <div style="position: absolute; bottom: 60px; right: 20px; width: 48px; height: 48px; background: #107c41; border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                 <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> 
             </div>
         </div>
     `;

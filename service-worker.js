@@ -1,10 +1,9 @@
-/* Service Worker for Offline Caching & Notifications */
-const CACHE_NAME = 'ghost-chat-v2';
+const CACHE_NAME = 'ghost-chat-v3';
 const ASSETS = [
     './',
     './index.html',
-    './style.css?v=2.0',
-    './script.js?v=2.0',
+    './style.css?v=3.0',
+    './script.js?v=3.0',
     './firebase-config.js',
     './manifest.json'
 ];
